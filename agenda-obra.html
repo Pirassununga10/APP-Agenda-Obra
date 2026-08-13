@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#1B1E21">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -737,7 +737,10 @@
 <header class="topbar">
   <div class="brand-row">
     <div class="brand"><span class="mark">▣</span><span class="rest">Agenda · Obra</span></div>
-    <button class="export-btn" id="exportBtn">⇪ Exportar dia</button>
+    <div style="display:flex; gap:6px;">
+      <button class="export-btn" id="gearBtn">⚙️</button>
+      <button class="export-btn" id="exportBtn">⇪ Exportar dia</button>
+    </div>
   </div>
   <div class="subtitle">Tarefas, compromissos e follow-ups de fornecedores</div>
   <div class="summary-bar" id="summaryBar"></div>
@@ -883,6 +886,39 @@
         <button type="submit" class="btn btn-primary" id="submitBtn">Guardar</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dataModalOverlay">
+  <div class="modal">
+    <h2>Dados</h2>
+    <p style="color:var(--text-muted); font-size:12.5px; margin:0 0 16px; line-height:1.5;">
+      Guarda um ficheiro de segurança ou transfere os dados entre o telemóvel e o tablet.
+    </p>
+    <div class="field">
+      <label>Exportar</label>
+      <button type="button" class="btn btn-secondary" id="exportDataBtn" style="width:100%;">📤 Exportar para ficheiro</button>
+    </div>
+    <div class="field">
+      <label>Importar</label>
+      <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
+      <button type="button" class="btn btn-secondary" id="importDataBtn" style="width:100%;">📥 Importar de ficheiro</button>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="closeDataModalBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="importChoiceOverlay">
+  <div class="modal">
+    <h2>Importar dados</h2>
+    <p style="color:var(--text-muted); font-size:13px; margin:0 0 16px; line-height:1.5;" id="importSummaryText"></p>
+    <div class="modal-actions" style="flex-direction:column;">
+      <button type="button" class="btn btn-primary" id="importMergeBtn" style="margin-bottom:8px; width:100%;">Juntar (só adiciona o que falta)</button>
+      <button type="button" class="btn btn-secondary" id="importReplaceBtn" style="width:100%;">Substituir tudo</button>
+      <button type="button" class="btn btn-secondary" id="importCancelBtn" style="margin-top:8px; width:100%;">Cancelar</button>
+    </div>
   </div>
 </div>
 
@@ -1661,6 +1697,99 @@ entryForm.addEventListener('submit', (ev) => {
   modalOverlay.classList.remove('open');
   render();
   showToast('Entrada guardada');
+});
+
+/* ---------------- Export / Import data (manual multi-device sync) ---------------- */
+document.getElementById('gearBtn').addEventListener('click', () => {
+  document.getElementById('dataModalOverlay').classList.add('open');
+});
+document.getElementById('closeDataModalBtn').addEventListener('click', () => {
+  document.getElementById('dataModalOverlay').classList.remove('open');
+});
+document.getElementById('dataModalOverlay').addEventListener('click', (ev) => {
+  if(ev.target === document.getElementById('dataModalOverlay')) document.getElementById('dataModalOverlay').classList.remove('open');
+});
+
+document.getElementById('exportDataBtn').addEventListener('click', () => {
+  const payload = { exportedAt: new Date().toISOString(), entries, fornecedores, obras };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `agenda-obra-backup-${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Ficheiro exportado');
+});
+
+document.getElementById('importDataBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+
+let pendingImport = null;
+document.getElementById('importFileInput').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data.entries)) throw new Error('formato inválido');
+      pendingImport = data;
+      const dateInfo = data.exportedAt ? ` · exportado em ${formatDatePT(data.exportedAt.slice(0,10))}` : '';
+      document.getElementById('importSummaryText').textContent =
+        `Ficheiro com ${data.entries.length} entrada(s)${dateInfo}. Como queres aplicar?`;
+      document.getElementById('dataModalOverlay').classList.remove('open');
+      document.getElementById('importChoiceOverlay').classList.add('open');
+    }catch(err){
+      showToast('Ficheiro inválido');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+});
+
+document.getElementById('importCancelBtn').addEventListener('click', () => {
+  pendingImport = null;
+  document.getElementById('importChoiceOverlay').classList.remove('open');
+});
+document.getElementById('importChoiceOverlay').addEventListener('click', (ev) => {
+  if(ev.target === document.getElementById('importChoiceOverlay')){
+    pendingImport = null;
+    document.getElementById('importChoiceOverlay').classList.remove('open');
+  }
+});
+
+document.getElementById('importReplaceBtn').addEventListener('click', () => {
+  if(!pendingImport) return;
+  entries = pendingImport.entries || [];
+  fornecedores = pendingImport.fornecedores || [];
+  obras = pendingImport.obras || [];
+  saveFornecedores();
+  saveObras();
+  saveEntries();
+  pendingImport = null;
+  document.getElementById('importChoiceOverlay').classList.remove('open');
+  render();
+  showToast('Dados substituídos');
+});
+
+document.getElementById('importMergeBtn').addEventListener('click', () => {
+  if(!pendingImport) return;
+  const existingIds = new Set(entries.map(x => x.id));
+  let added = 0;
+  (pendingImport.entries || []).forEach(e => {
+    if(!existingIds.has(e.id)){ entries.push(e); added++; }
+  });
+  (pendingImport.fornecedores || []).forEach(f => upsertFornecedor(f.nome, f.telefone));
+  (pendingImport.obras || []).forEach(o => upsertObra(o));
+  saveEntries();
+  pendingImport = null;
+  document.getElementById('importChoiceOverlay').classList.remove('open');
+  render();
+  showToast(`${added} entrada(s) nova(s) adicionada(s)`);
 });
 
 /* ---------------- Notifications (best-effort local scheduling) ---------------- */
