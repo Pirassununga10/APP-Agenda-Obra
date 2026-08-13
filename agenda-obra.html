@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1B1E21">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Agenda · Obra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1B1E21;
+    --surface:#24282C;
+    --surface-2:#2E3338;
+    --surface-3:#383E44;
+    --paper:#E7E4DA;
+    --paper-dim:#B9B6AC;
+    --orange:#F2661D;
+    --orange-dim:#8C3E14;
+    --blue:#5B8AA6;
+    --green:#5E9C6C;
+    --danger:#D64545;
+    --border:#3A3F44;
+    --text:#EDEAE2;
+    --text-muted:#9CA3A8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Work Sans',system-ui,sans-serif;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    overscroll-behavior-y:contain;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+
+  header.topbar{
+    padding:16px 18px 10px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, #1F2225, #1B1E21);
+  }
+  header.topbar .brand-row{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  header.topbar .brand{
+    display:flex; align-items:baseline; gap:8px;
+  }
+  header.topbar .brand .mark{
+    color:var(--orange);
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:20px;
+  }
+  header.topbar .brand .rest{
+    font-family:'Oswald',sans-serif;
+    font-weight:500;
+    font-size:20px;
+    color:var(--text);
+    letter-spacing:0.06em;
+  }
+  header.topbar .subtitle{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-top:2px;
+    letter-spacing:0.02em;
+  }
+  .export-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--paper);
+    font-family:'Oswald',sans-serif;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    padding:8px 10px;
+    border-radius:7px;
+    cursor:pointer;
+    display:flex; align-items:center; gap:5px;
+  }
+  .export-btn:active{background:var(--surface-3);}
+
+  .summary-bar{
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--paper-dim);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 12px;
+    line-height:1.5;
+  }
+  .summary-bar b{color:var(--text);}
+  .summary-bar .warn{color:var(--danger); font-weight:600;}
+
+  .notif-bar{
+    margin-top:8px;
+    font-size:12px;
+    color:var(--text-muted);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .notif-btn{
+    background:var(--orange);
+    color:#1B1E21;
+    border:none;
+    font-family:'Oswald',sans-serif;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+
+  nav.tabs{
+    display:flex;
+    gap:6px;
+    padding:12px 14px 0;
+    overflow-x:auto;
+    scrollbar-width:none;
+    background:var(--bg);
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    flex:0 0 auto;
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-family:'Oswald',sans-serif;
+    font-size:13px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:10px 12px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  nav.tabs button .count{
+    font-family:'Work Sans',sans-serif;
+    font-size:11px;
+    background:var(--surface-2);
+    color:var(--text-muted);
+    padding:1px 6px;
+    border-radius:10px;
+    min-width:18px;
+    text-align:center;
+  }
+  nav.tabs button.active{
+    color:var(--text);
+    border-bottom-color:var(--orange);
+  }
+  nav.tabs button.active .count{
+    background:var(--orange);
+    color:#1B1E21;
+    font-weight:600;
+  }
+  nav.tabs button[data-tab="atrasados"].active .count{
+    background:var(--danger);
+    color:#fff;
+  }
+
+  .filter-bar{
+    display:flex;
+    gap:8px;
+    padding:10px 14px 0;
+    border-bottom:1px solid var(--border);
+    padding-bottom:10px;
+  }
+  .filter-bar select{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:7px;
+    font-size:12.5px;
+    font-family:'Work Sans',sans-serif;
+  }
+
+  main{
+    flex:1;
+    padding:14px 14px 100px;
+    max-width:640px;
+    width:100%;
+    margin:0 auto;
+  }
+  .empty-state{
+    text-align:center;
+    color:var(--text-muted);
+    padding:60px 20px;
+    font-size:14px;
+    line-height:1.6;
+  }
+  .empty-state .glyph{
+    font-size:34px;
+    display:block;
+    margin-bottom:10px;
+    opacity:0.5;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:4px solid var(--border);
+    border-radius:10px;
+    padding:14px 14px 12px;
+    margin-bottom:10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card.prio-urgente{border-left-color:var(--orange);}
+  .card.prio-critico{border-left-color:var(--danger);}
+  .card.done{opacity:0.5;}
+  .card.done .titulo{text-decoration:line-through;}
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .check{
+    flex:0 0 auto;
+    width:22px;height:22px;
+    border-radius:50%;
+    border:2px solid var(--text-muted);
+    background:none;
+    cursor:pointer;
+    margin-top:2px;
+    display:flex;align-items:center;justify-content:center;
+    color:transparent;
+    font-size:13px;
+    transition:all .15s;
+  }
+  .check.checked{
+    background:var(--orange);
+    border-color:var(--orange);
+    color:#1B1E21;
+  }
+  .card-body{flex:1; min-width:0;}
+  .titulo-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .titulo{
+    font-size:15px;
+    font-weight:600;
+    color:var(--text);
+    word-break:break-word;
+  }
+  .prio-badge{
+    font-size:9.5px;
+    text-transform:uppercase;
+    font-family:'Oswald',sans-serif;
+    letter-spacing:0.05em;
+    padding:1px 6px;
+    border-radius:4px;
+  }
+  .prio-badge.urgente{background:rgba(242,102,29,0.15); color:var(--orange);}
+  .prio-badge.critico{background:rgba(214,69,69,0.15); color:var(--danger);}
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:7px;
+    align-items:center;
+  }
+  .tag{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    font-family:'Oswald',sans-serif;
+    padding:3px 8px;
+    border-radius:4px;
+    background:var(--surface-2);
+    color:var(--text-muted);
+    border:1px solid var(--border);
+  }
+  .tag.tipo-tarefa{color:var(--blue); border-color:var(--blue);}
+  .tag.tipo-compromisso{color:var(--paper-dim); border-color:var(--paper-dim);}
+  .tag.tipo-reuniao{color:#C79A4B; border-color:#C79A4B;}
+  .tag.tipo-followup{color:var(--orange); border-color:var(--orange);}
+  .tag.tag-obra{color:var(--green); border-color:var(--green);}
+  .data-label{
+    font-size:12px;
+    color:var(--text-muted);
+  }
+  .fornecedor-row{
+    display:flex; align-items:center; gap:8px;
+    margin-top:6px;
+    font-size:12px;
+    color:var(--paper-dim);
+  }
+  .call-btn{
+    background:var(--surface-2);
+    border:1px solid var(--blue);
+    color:var(--blue);
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:12px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  .notas{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:6px;
+    line-height:1.4;
+  }
+  .card-actions{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    flex:0 0 auto;
+  }
+  .edit-btn{
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-size:14px;
+    cursor:pointer;
+    padding:3px 4px;
+    line-height:1;
+  }
+  .edit-btn:active{color:var(--blue);}
+  .del-btn{
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-size:18px;
+    cursor:pointer;
+    padding:2px 4px;
+    line-height:1;
+    flex:0 0 auto;
+  }
+  .del-btn:active{color:var(--danger);}
+
+  .card-footer{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .snooze-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    font-size:11px;
+    padding:5px 9px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:'Work Sans',sans-serif;
+  }
+  .snooze-btn:active{background:var(--surface-3);}
+  .repeat-badge{
+    font-size:10.5px;
+    color:var(--orange-dim);
+    background:rgba(242,102,29,0.08);
+    border:1px dashed var(--orange);
+    padding:3px 8px;
+    border-radius:6px;
+  }
+
+  .stamp{
+    position:absolute;
+    top:10px;
+    right:-4px;
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--danger);
+    border:2px solid var(--danger);
+    border-radius:3px;
+    padding:3px 9px 2px;
+    transform:rotate(8deg);
+    background:rgba(214,69,69,0.08);
+    text-transform:uppercase;
+    box-shadow: 0 0 0 1px rgba(214,69,69,0.15);
+  }
+
+  .fab-group{
+    position:fixed;
+    right:20px;
+    bottom:24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    z-index:30;
+  }
+  .fab{
+    width:58px;height:58px;
+    border-radius:50%;
+    background:var(--orange);
+    color:#1B1E21;
+    border:none;
+    font-size:30px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(242,102,29,0.4);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fab:active{transform:scale(0.94);}
+  .fab-voice{
+    width:50px;height:50px;
+    border-radius:50%;
+    background:var(--surface-2);
+    border:1px solid var(--blue);
+    color:var(--blue);
+    font-size:20px;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fab-voice:active{transform:scale(0.94);}
+
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    display:none;
+    align-items:flex-end;
+    z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--surface);
+    width:100%;
+    max-height:92vh;
+    overflow-y:auto;
+    border-radius:16px 16px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+  }
+  .modal h2{
+    font-size:18px;
+    margin:0 0 16px;
+    color:var(--orange);
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--text-muted);
+    font-family:'Oswald',sans-serif;
+    margin-bottom:6px;
+  }
+  .field input[type="text"],
+  .field input[type="tel"],
+  .field input[type="date"],
+  .field input[type="time"],
+  .field input[type="number"],
+  .field textarea,
+  .field select{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 11px;
+    border-radius:8px;
+    font-size:14.5px;
+    font-family:'Work Sans',sans-serif;
+  }
+  .field textarea{resize:vertical; min-height:56px;}
+  .titulo-input-row{display:flex; gap:8px; align-items:stretch;}
+  .titulo-input-row input{flex:1;}
+  .mic-inline-btn{
+    flex:0 0 auto;
+    width:42px;
+    background:var(--surface-2);
+    border:1px solid var(--blue);
+    color:var(--blue);
+    border-radius:8px;
+    font-size:17px;
+    cursor:pointer;
+  }
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .type-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .type-grid button{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    padding:10px 6px;
+    border-radius:8px;
+    font-family:'Oswald',sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    cursor:pointer;
+  }
+  .type-grid button.sel{
+    border-color:var(--orange);
+    color:var(--orange);
+    background:rgba(242,102,29,0.08);
+  }
+  .prio-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+  }
+  .prio-grid button{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    padding:9px 6px;
+    border-radius:8px;
+    font-family:'Oswald',sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    cursor:pointer;
+  }
+  .prio-grid button[data-prio="normal"].sel{border-color:var(--blue); color:var(--blue); background:rgba(91,138,166,0.1);}
+  .prio-grid button[data-prio="urgente"].sel{border-color:var(--orange); color:var(--orange); background:rgba(242,102,29,0.1);}
+  .prio-grid button[data-prio="critico"].sel{border-color:var(--danger); color:var(--danger); background:rgba(214,69,69,0.1);}
+
+  /* Quando: quick chips */
+  .quick-chips{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .quick-chips button{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    padding:10px 4px;
+    border-radius:8px;
+    font-family:'Oswald',sans-serif;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    cursor:pointer;
+  }
+  .quick-chips button.sel{
+    border-color:var(--orange);
+    color:var(--orange);
+    background:rgba(242,102,29,0.08);
+  }
+  .quando-links{
+    display:flex;
+    gap:14px;
+    margin-bottom:10px;
+  }
+  .link-btn{
+    background:none;
+    border:none;
+    color:var(--blue);
+    font-size:12px;
+    padding:4px 0;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:2px;
+    font-family:'Work Sans',sans-serif;
+  }
+  .link-btn.active{color:var(--orange);}
+
+  .calc-row{
+    display:grid;
+    grid-template-columns:1fr 100px;
+    gap:8px;
+  }
+  .offset-dir{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .offset-dir button{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    padding:9px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .offset-dir button.sel{
+    border-color:var(--blue);
+    color:var(--blue);
+  }
+  .calc-preview{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:8px;
+    padding:8px 10px;
+    background:var(--surface-2);
+    border-radius:8px;
+    border:1px dashed var(--border);
+  }
+  .calc-preview b{color:var(--paper);}
+
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    padding:11px 12px;
+    border-radius:8px;
+  }
+  .checkbox-row input{width:17px; height:17px; accent-color:var(--orange);}
+  .checkbox-row label{margin:0; font-size:13px; text-transform:none; letter-spacing:0; color:var(--text); font-family:'Work Sans',sans-serif;}
+  .repeat-days-row{margin-top:10px; display:flex; align-items:center; gap:8px;}
+  .repeat-days-row input{width:80px;}
+  .repeat-days-row span{font-size:12.5px; color:var(--text-muted);}
+
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+  }
+  .btn{
+    flex:1;
+    padding:13px;
+    border-radius:9px;
+    border:none;
+    font-family:'Oswald',sans-serif;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--orange); color:#1B1E21; font-weight:600;}
+  .btn-secondary{background:var(--surface-2); color:var(--text-muted); border:1px solid var(--border);}
+
+  .toast{
+    position:fixed;
+    bottom:96px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--surface-3);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 16px;
+    border-radius:20px;
+    font-size:13px;
+    z-index:60;
+    opacity:0;
+    transition:opacity .2s;
+    pointer-events:none;
+    max-width:85vw;
+    text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  .sticky-top{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--bg);
+  }
+
+  /* Voice overlay */
+  .voice-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:70;
+    flex-direction:column;
+  }
+  .voice-overlay.open{display:flex;}
+  .voice-mic{
+    width:84px;height:84px;
+    border-radius:50%;
+    background:var(--orange);
+    color:#1B1E21;
+    font-size:34px;
+    display:flex;align-items:center;justify-content:center;
+    animation:pulse 1.3s infinite ease-in-out;
+    margin-bottom:18px;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(242,102,29,0.5);}
+    70%{box-shadow:0 0 0 22px rgba(242,102,29,0);}
+    100%{box-shadow:0 0 0 0 rgba(242,102,29,0);}
+  }
+  .voice-label{
+    color:var(--text);
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    font-size:14px;
+    margin-bottom:6px;
+  }
+  .voice-hint{
+    color:var(--text-muted);
+    font-size:12.5px;
+    text-align:center;
+    max-width:260px;
+  }
+  .voice-cancel{
+    margin-top:22px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    padding:9px 18px;
+    border-radius:20px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+<header class="topbar">
+  <div class="brand-row">
+    <div class="brand"><span class="mark">▣</span><span class="rest">Agenda · Obra</span></div>
+    <button class="export-btn" id="exportBtn">⇪ Exportar dia</button>
+  </div>
+  <div class="subtitle">Tarefas, compromissos e follow-ups de fornecedores</div>
+  <div class="summary-bar" id="summaryBar"></div>
+  <div class="notif-bar" id="notifBar">
+    <span id="notifStatusText"></span>
+    <button class="notif-btn" id="notifActionBtn">Ativar</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="hoje" class="active">Hoje <span class="count" id="count-hoje">0</span></button>
+  <button data-tab="proximos">Próx. 7 dias <span class="count" id="count-proximos">0</span></button>
+  <button data-tab="atrasados">Atrasados <span class="count" id="count-atrasados">0</span></button>
+  <button data-tab="todos">Todos <span class="count" id="count-todos">0</span></button>
+</nav>
+</div>
+
+<div class="filter-bar">
+  <select id="filterObra">
+    <option value="">Todas as obras</option>
+  </select>
+</div>
+
+<main id="list"></main>
+
+<div class="fab-group">
+  <button class="fab-voice" id="fabVoice" aria-label="Adicionar por voz">🎤</button>
+  <button class="fab" id="fabAdd" aria-label="Adicionar">+</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="voice-overlay" id="voiceOverlay">
+  <div class="voice-mic">🎤</div>
+  <div class="voice-label" id="voiceLabel">A ouvir…</div>
+  <div class="voice-hint">Diz o que precisas de fazer. Ex.: "Ligar ao fornecedor de cerâmica"</div>
+  <button class="voice-cancel" id="voiceCancel">Cancelar</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Nova entrada</h2>
+    <form id="entryForm">
+      <div class="field">
+        <label>Título</label>
+        <div class="titulo-input-row">
+          <input type="text" id="f-titulo" required placeholder="Ex.: Ligar ao fornecedor de cerâmica">
+          <button type="button" class="mic-inline-btn" id="micTitulo" title="Ditar título">🎤</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Obra / projeto (opcional)</label>
+        <input type="text" id="f-obra" list="obraList" placeholder="Ex.: Moradia Sintra">
+        <datalist id="obraList"></datalist>
+      </div>
+
+      <div class="field">
+        <label>Prioridade</label>
+        <div class="prio-grid" id="prioGrid">
+          <button type="button" data-prio="normal" class="sel">Normal</button>
+          <button type="button" data-prio="urgente">Urgente</button>
+          <button type="button" data-prio="critico">Crítico</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tipo</label>
+        <div class="type-grid" id="tipoGrid">
+          <button type="button" data-tipo="tarefa" class="sel">Tarefa</button>
+          <button type="button" data-tipo="compromisso">Compromisso</button>
+          <button type="button" data-tipo="reuniao">Reunião</button>
+          <button type="button" data-tipo="followup">Follow-up fornecedor</button>
+        </div>
+      </div>
+
+      <div id="fornecedorBlock" style="display:none;">
+        <div class="two-col">
+          <div class="field">
+            <label>Fornecedor</label>
+            <input type="text" id="f-fornecedor" list="fornecedorList" placeholder="Nome">
+            <datalist id="fornecedorList"></datalist>
+          </div>
+          <div class="field">
+            <label>Telefone</label>
+            <input type="tel" id="f-telefone" placeholder="9xxxxxxxx">
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="f-repetir">
+          <label for="f-repetir">Repetir automaticamente se ficar atrasado</label>
+        </div>
+        <div class="repeat-days-row" id="repeatDaysRow" style="display:none;">
+          <input type="number" id="f-repetir-dias" min="1" value="3">
+          <span>dias sem resposta → reagenda sozinho</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Quando</label>
+        <div class="quick-chips" id="quickChips">
+          <button type="button" data-days="0" class="sel">Hoje</button>
+          <button type="button" data-days="1">Amanhã</button>
+          <button type="button" data-days="3">+3 dias</button>
+          <button type="button" data-days="7">+7 dias</button>
+        </div>
+        <div class="quando-links">
+          <button type="button" class="link-btn" id="toggleCustomDate">📅 Escolher uma data</button>
+          <button type="button" class="link-btn" id="toggleCalcDate">⚙️ Calcular a partir de outra data</button>
+        </div>
+
+        <div id="customDateBlock" style="display:none;">
+          <input type="date" id="f-data-direta">
+        </div>
+
+        <div id="modoCalculada" style="display:none;">
+          <div class="calc-row">
+            <input type="date" id="f-data-base">
+            <input type="number" id="f-offset" min="0" placeholder="Dias" value="3">
+          </div>
+          <div class="offset-dir">
+            <button type="button" data-dir="depois" class="sel">Depois da data</button>
+            <button type="button" data-dir="antes">Antes da data</button>
+          </div>
+        </div>
+
+        <div class="quando-links" style="margin-top:2px;">
+          <button type="button" class="link-btn" id="toggleHora">🕐 Adicionar hora (opcional)</button>
+        </div>
+        <div id="horaBlock" style="display:none; margin-top:6px; margin-bottom:8px;">
+          <input type="time" id="f-hora">
+        </div>
+
+        <div class="calc-preview" id="calcPreview">Data selecionada: <b>Hoje</b></div>
+      </div>
+
+      <div class="field">
+        <label>Notas (opcional)</label>
+        <textarea id="f-notas" placeholder="Detalhes, contacto, referência do email..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'agenda-obra-entries-v2';
+const FORNECEDORES_KEY = 'agenda-obra-fornecedores-v1';
+const OBRAS_KEY = 'agenda-obra-obras-v1';
+const OLD_STORAGE_KEY = 'agenda-obra-entries-v1';
+
+function loadJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+let entries = loadJSON(STORAGE_KEY, null);
+if(entries === null){
+  const old = loadJSON(OLD_STORAGE_KEY, []);
+  entries = old.map(e => ({
+    ...e,
+    obra: e.obra || '',
+    telefone: e.telefone || '',
+    prioridade: e.prioridade || 'normal',
+    repetir: e.repetir || false,
+    repetirDias: e.repetirDias || null,
+    tentativas: e.tentativas || 0
+  }));
+  saveJSON(STORAGE_KEY, entries);
+}
+let fornecedores = loadJSON(FORNECEDORES_KEY, []);
+let obras = loadJSON(OBRAS_KEY, []);
+
+function saveEntries(){ saveJSON(STORAGE_KEY, entries); syncNotifications(); }
+function saveFornecedores(){ saveJSON(FORNECEDORES_KEY, fornecedores); }
+function saveObras(){ saveJSON(OBRAS_KEY, obras); }
+
+function upsertFornecedor(nome, telefone){
+  if(!nome) return;
+  const existing = fornecedores.find(f => f.nome.toLowerCase() === nome.toLowerCase());
+  if(existing){
+    if(telefone) existing.telefone = telefone;
+  } else {
+    fornecedores.push({ nome, telefone: telefone || '' });
+  }
+  saveFornecedores();
+}
+function upsertObra(nome){
+  if(!nome) return;
+  if(!obras.some(o => o.toLowerCase() === nome.toLowerCase())){
+    obras.push(nome);
+    saveObras();
+  }
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function todayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function addDays(iso, days){
+  const [y,m,dd] = iso.split('-').map(Number);
+  const d = new Date(y, m-1, dd);
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function daysBetween(iso){
+  const today = new Date(todayISO() + 'T00:00:00');
+  const target = new Date(iso + 'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+function formatDatePT(iso){
+  if(!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-PT', { day:'2-digit', month:'short', year:'numeric' });
+}
+function relLabel(iso){
+  const diff = daysBetween(iso);
+  if(diff === 0) return 'Hoje';
+  if(diff === 1) return 'Amanhã';
+  if(diff === -1) return 'Ontem · 1 dia atrasado';
+  if(diff < 0) return `${Math.abs(diff)} dias atrasado`;
+  return `Daqui a ${diff} dias`;
+}
+
+const TIPO_LABELS = {
+  tarefa: 'Tarefa',
+  compromisso: 'Compromisso',
+  reuniao: 'Reunião',
+  followup: 'Follow-up fornecedor'
+};
+const PRIO_LABELS = { normal:'Normal', urgente:'Urgente', critico:'Crítico' };
+
+/* ---------------- Auto-repeat overdue follow-ups ---------------- */
+function autoAdvanceOverdueRepeats(){
+  const today = todayISO();
+  let changed = false;
+  entries.forEach(e => {
+    if(e.repetir && !e.concluida && e.dataFinal < today){
+      const step = e.repetirDias && e.repetirDias > 0 ? e.repetirDias : 3;
+      let nd = e.dataFinal;
+      let count = 0;
+      while(nd < today && count < 500){
+        nd = addDays(nd, step);
+        e.tentativas = (e.tentativas || 0) + 1;
+        count++;
+      }
+      e.dataFinal = nd;
+      changed = true;
+    }
+  });
+  if(changed) saveEntries();
+}
+
+/* ---------------- Rendering ---------------- */
+let activeTab = 'hoje';
+let filterObra = '';
+
+function getFiltered(tab){
+  const today = todayISO();
+  const week = addDays(today, 7);
+  let list = entries.slice();
+
+  if(tab === 'hoje'){
+    list = list.filter(e => !e.concluida && e.dataFinal === today);
+  } else if(tab === 'proximos'){
+    list = list.filter(e => !e.concluida && e.dataFinal > today && e.dataFinal <= week);
+  } else if(tab === 'atrasados'){
+    list = list.filter(e => !e.concluida && e.dataFinal < today);
+  } else {
+    list = list.slice();
+  }
+  if(filterObra){
+    list = list.filter(e => (e.obra || '') === filterObra);
+  }
+  list.sort((a,b) => {
+    if(a.dataFinal !== b.dataFinal) return a.dataFinal.localeCompare(b.dataFinal);
+    const ah = a.horaInicio || '99:99';
+    const bh = b.horaInicio || '99:99';
+    return ah.localeCompare(bh);
+  });
+  return list;
+}
+
+function updateCounts(){
+  document.getElementById('count-hoje').textContent = getFilteredNoObra('hoje').length;
+  document.getElementById('count-proximos').textContent = getFilteredNoObra('proximos').length;
+  document.getElementById('count-atrasados').textContent = getFilteredNoObra('atrasados').length;
+  document.getElementById('count-todos').textContent = entries.length;
+}
+function getFilteredNoObra(tab){
+  const savedFilter = filterObra;
+  filterObra = '';
+  const res = getFiltered(tab);
+  filterObra = savedFilter;
+  return res;
+}
+
+function updateSummaryBar(){
+  const atrasados = getFilteredNoObra('atrasados').length;
+  const hoje = getFilteredNoObra('hoje').length;
+  const el = document.getElementById('summaryBar');
+  if(atrasados === 0 && hoje === 0){
+    el.innerHTML = `Sem nada urgente agora. Bom trabalho.`;
+    return;
+  }
+  let parts = [];
+  if(atrasados > 0) parts.push(`<span class="warn">${atrasados} atrasado${atrasados>1?'s':''}</span>`);
+  if(hoje > 0) parts.push(`<b>${hoje}</b> para hoje`);
+  el.innerHTML = parts.join(' · ');
+}
+
+function updateObraOptions(){
+  const filterSel = document.getElementById('filterObra');
+  const current = filterSel.value;
+  const uniqueObras = Array.from(new Set(entries.map(e => e.obra).filter(Boolean))).sort();
+  filterSel.innerHTML = '<option value="">Todas as obras</option>' +
+    uniqueObras.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  filterSel.value = uniqueObras.includes(current) ? current : '';
+  filterObra = filterSel.value;
+
+  const datalist = document.getElementById('obraList');
+  datalist.innerHTML = obras.map(o => `<option value="${escapeHtml(o)}">`).join('');
+}
+function updateFornecedorOptions(){
+  const datalist = document.getElementById('fornecedorList');
+  datalist.innerHTML = fornecedores.map(f => `<option value="${escapeHtml(f.nome)}">`).join('');
+}
+
+function render(){
+  autoAdvanceOverdueRepeats();
+  updateObraOptions();
+  updateSummaryBar();
+
+  const list = getFiltered(activeTab);
+  const main = document.getElementById('list');
+  main.innerHTML = '';
+
+  if(list.length === 0){
+    const emptyMsgs = {
+      hoje: 'Nada para hoje. Bom sinal.',
+      proximos: 'Nada agendado para os próximos 7 dias.',
+      atrasados: 'Sem atrasos. Tudo em dia.',
+      todos: 'Ainda não há entradas. Toca em + para começar.'
+    };
+    main.innerHTML = `<div class="empty-state"><span class="glyph">▣</span>${emptyMsgs[activeTab]}</div>`;
+    updateCounts();
+    return;
+  }
+
+  list.forEach(e => {
+    const isOverdue = !e.concluida && e.dataFinal < todayISO();
+    const prio = e.prioridade || 'normal';
+    const card = document.createElement('div');
+    card.className = 'card' + (e.concluida ? ' done' : '') + (prio !== 'normal' ? ' prio-' + prio : '');
+
+    let prioBadge = prio !== 'normal' ? `<span class="prio-badge ${prio}">${PRIO_LABELS[prio]}</span>` : '';
+    let obraTag = e.obra ? `<span class="tag tag-obra">${escapeHtml(e.obra)}</span>` : '';
+    let fornecedorHtml = '';
+    if(e.fornecedor){
+      const callHtml = e.telefone ? `<a class="call-btn" href="tel:${escapeHtml(e.telefone)}" onclick="event.stopPropagation()">📞 ${escapeHtml(e.telefone)}</a>` : '';
+      fornecedorHtml = `<div class="fornecedor-row"><span>${escapeHtml(e.fornecedor)}</span>${callHtml}</div>`;
+    }
+    let notasHtml = e.notas ? `<div class="notas">${escapeHtml(e.notas)}</div>` : '';
+    let stampHtml = isOverdue ? `<div class="stamp">Atrasado</div>` : '';
+    let repeatBadge = (e.repetir && e.tentativas > 0) ? `<span class="repeat-badge">↻ reagendado ${e.tentativas}x</span>` : '';
+
+    let footerHtml = '';
+    if(!e.concluida){
+      footerHtml = `<div class="card-footer">
+        <button class="snooze-btn" data-action="snooze1" data-id="${e.id}">Adiar p/ amanhã</button>
+        <button class="snooze-btn" data-action="snooze3" data-id="${e.id}">Adiar +3 dias</button>
+        ${repeatBadge}
+      </div>`;
+    } else if(repeatBadge){
+      footerHtml = `<div class="card-footer">${repeatBadge}</div>`;
+    }
+
+    card.innerHTML = `
+      ${stampHtml}
+      <div class="card-top">
+        <button class="check ${e.concluida ? 'checked' : ''}" data-id="${e.id}">${e.concluida ? '✓' : ''}</button>
+        <div class="card-body">
+          <div class="titulo-row">
+            <span class="titulo">${escapeHtml(e.titulo)}</span>
+            ${prioBadge}
+          </div>
+          <div class="meta-row">
+            <span class="tag tipo-${e.tipo}">${TIPO_LABELS[e.tipo]}</span>
+            ${obraTag}
+            <span class="data-label">${formatDatePT(e.dataFinal)}${e.horaInicio ? ' · 🕐 ' + e.horaInicio : ''} · ${relLabel(e.dataFinal)}</span>
+          </div>
+          ${fornecedorHtml}
+          ${notasHtml}
+          ${footerHtml}
+        </div>
+        <div class="card-actions">
+          <button class="edit-btn" data-id="${e.id}">✏️</button>
+          <button class="del-btn" data-id="${e.id}">×</button>
+        </div>
+      </div>
+    `;
+    main.appendChild(card);
+  });
+
+  main.querySelectorAll('.check').forEach(btn => {
+    btn.addEventListener('click', () => toggleDone(btn.dataset.id));
+  });
+  main.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
+  });
+  main.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+  });
+  main.querySelectorAll('[data-action="snooze1"]').forEach(btn => {
+    btn.addEventListener('click', () => snoozeEntry(btn.dataset.id, 1));
+  });
+  main.querySelectorAll('[data-action="snooze3"]').forEach(btn => {
+    btn.addEventListener('click', () => snoozeEntry(btn.dataset.id, 3));
+  });
+
+  updateCounts();
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function toggleDone(id){
+  const e = entries.find(x => x.id === id);
+  if(e){ e.concluida = !e.concluida; saveEntries(); render(); showToast(e.concluida ? 'Marcado como feito' : 'Reaberto'); }
+}
+function deleteEntry(id){
+  entries = entries.filter(x => x.id !== id);
+  saveEntries();
+  render();
+  showToast('Entrada apagada');
+}
+function snoozeEntry(id, days){
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+  e.dataFinal = addDays(todayISO(), days);
+  saveEntries();
+  render();
+  showToast('Adiado para ' + formatDatePT(e.dataFinal));
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------------- Tabs & filter ---------------- */
+document.getElementById('tabs').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button[data-tab]');
+  if(!btn) return;
+  activeTab = btn.dataset.tab;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+});
+document.getElementById('filterObra').addEventListener('change', (ev) => {
+  filterObra = ev.target.value;
+  render();
+});
+
+/* ---------------- Export day summary ---------------- */
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const atrasados = getFilteredNoObra('atrasados');
+  const hoje = getFilteredNoObra('hoje');
+  const proximos = getFilteredNoObra('proximos');
+
+  const fmtLine = e => `- ${e.titulo}${e.obra ? ' ['+e.obra+']' : ''}${e.fornecedor ? ' · ' + e.fornecedor : ''}`;
+
+  let text = `Resumo do dia — ${formatDatePT(todayISO())}\n\n`;
+  if(atrasados.length){
+    text += `⚠️ Atrasados (${atrasados.length}):\n` + atrasados.map(fmtLine).join('\n') + '\n\n';
+  }
+  if(hoje.length){
+    text += `📌 Hoje (${hoje.length}):\n` + hoje.map(fmtLine).join('\n') + '\n\n';
+  }
+  if(proximos.length){
+    text += `📅 Próx. 7 dias (${proximos.length}):\n` + proximos.map(fmtLine).join('\n') + '\n';
+  }
+  if(!atrasados.length && !hoje.length && !proximos.length){
+    text += 'Sem nada pendente de momento.';
+  }
+
+  if(navigator.share){
+    try{
+      await navigator.share({ title: 'Resumo do dia — Agenda Obra', text });
+      return;
+    }catch(e){ /* user cancelled or unsupported, fall through */ }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('Resumo copiado para a área de transferência');
+  }catch(e){
+    showToast('Não foi possível copiar automaticamente');
+  }
+});
+
+/* ---------------- Voice capture ---------------- */
+const voiceOverlay = document.getElementById('voiceOverlay');
+let activeRecognition = null;
+let voiceTarget = 'f-titulo';
+
+function speechSupported(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function startVoiceCapture(targetFieldId, opts){
+  opts = opts || {};
+  if(!speechSupported()){
+    showToast('Ditado por voz não suportado. Usa o microfone do teclado no campo de texto.');
+    return;
+  }
+  voiceTarget = targetFieldId;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SR();
+  recognition.lang = 'pt-PT';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  activeRecognition = recognition;
+
+  document.getElementById('voiceLabel').textContent = 'A ouvir…';
+  voiceOverlay.classList.add('open');
+
+  recognition.onresult = (ev) => {
+    const text = ev.results[0][0].transcript;
+    voiceOverlay.classList.remove('open');
+    if(opts.onResult) opts.onResult(text);
+  };
+  recognition.onerror = (ev) => {
+    voiceOverlay.classList.remove('open');
+    if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed'){
+      showToast('Permissão de microfone recusada.');
+    } else if(ev.error === 'no-speech'){
+      showToast('Não percebi. Tenta outra vez.');
+    } else {
+      showToast('Não foi possível usar o microfone agora.');
+    }
+  };
+  recognition.onend = () => {
+    voiceOverlay.classList.remove('open');
+    activeRecognition = null;
+  };
+
+  try{
+    recognition.start();
+  }catch(e){
+    voiceOverlay.classList.remove('open');
+    showToast('Não foi possível iniciar o microfone.');
+  }
+}
+
+document.getElementById('voiceCancel').addEventListener('click', () => {
+  if(activeRecognition){
+    try{ activeRecognition.abort(); }catch(e){}
+  }
+  voiceOverlay.classList.remove('open');
+});
+
+document.getElementById('fabVoice').addEventListener('click', () => {
+  startVoiceCapture('quick', {
+    onResult: (text) => {
+      openAddModal();
+      document.getElementById('f-titulo').value = text;
+      document.getElementById('f-titulo').focus();
+      showToast('Título preenchido — confirma e guarda');
+    }
+  });
+});
+
+document.getElementById('micTitulo').addEventListener('click', () => {
+  startVoiceCapture('f-titulo', {
+    onResult: (text) => {
+      document.getElementById('f-titulo').value = text;
+    }
+  });
+});
+
+/* ---------------- Modal / form ---------------- */
+const modalOverlay = document.getElementById('modalOverlay');
+const entryForm = document.getElementById('entryForm');
+let selectedTipo = 'tarefa';
+let selectedPrio = 'normal';
+let selectedDir = 'depois';
+let whenSource = 'chip'; // 'chip' | 'custom' | 'calc'
+let currentDataFinal = todayISO();
+let editingId = null;
+
+function updateWhenPreview(){
+  const diff = daysBetween(currentDataFinal);
+  let label;
+  if(diff === 0) label = 'Hoje';
+  else if(diff === 1) label = 'Amanhã';
+  else label = formatDatePT(currentDataFinal);
+  const hora = document.getElementById('f-hora').value;
+  if(hora) label += ' · 🕐 ' + hora;
+  document.getElementById('calcPreview').innerHTML = `Data selecionada: <b>${label}</b>`;
+}
+
+function openAddModal(){
+  entryForm.reset();
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Nova entrada';
+  document.getElementById('submitBtn').textContent = 'Guardar';
+  selectedTipo = 'tarefa';
+  selectedPrio = 'normal';
+  selectedDir = 'depois';
+  whenSource = 'chip';
+  currentDataFinal = todayISO();
+
+  document.querySelectorAll('#tipoGrid button').forEach(b => b.classList.toggle('sel', b.dataset.tipo === selectedTipo));
+  document.querySelectorAll('#prioGrid button').forEach(b => b.classList.toggle('sel', b.dataset.prio === selectedPrio));
+  document.querySelectorAll('.offset-dir button').forEach(b => b.classList.toggle('sel', b.dataset.dir === selectedDir));
+  document.querySelectorAll('#quickChips button').forEach(b => b.classList.toggle('sel', b.dataset.days === '0'));
+
+  document.getElementById('fornecedorBlock').style.display = 'none';
+  document.getElementById('repeatDaysRow').style.display = 'none';
+  document.getElementById('f-repetir').checked = false;
+
+  document.getElementById('customDateBlock').style.display = 'none';
+  document.getElementById('modoCalculada').style.display = 'none';
+  document.getElementById('toggleCustomDate').classList.remove('active');
+  document.getElementById('toggleCalcDate').classList.remove('active');
+  document.getElementById('f-data-direta').value = todayISO();
+  document.getElementById('f-data-base').value = todayISO();
+  document.getElementById('f-offset').value = 3;
+  document.getElementById('f-repetir-dias').value = 3;
+
+  document.getElementById('horaBlock').style.display = 'none';
+  document.getElementById('toggleHora').classList.remove('active');
+  document.getElementById('f-hora').value = '';
+
+  updateWhenPreview();
+  updateFornecedorOptions();
+  modalOverlay.classList.add('open');
+}
+
+function openEditModal(id){
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+
+  entryForm.reset();
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Editar entrada';
+  document.getElementById('submitBtn').textContent = 'Guardar alterações';
+
+  document.getElementById('f-titulo').value = e.titulo;
+  document.getElementById('f-obra').value = e.obra || '';
+  document.getElementById('f-notas').value = e.notas || '';
+
+  selectedTipo = e.tipo || 'tarefa';
+  document.querySelectorAll('#tipoGrid button').forEach(b => b.classList.toggle('sel', b.dataset.tipo === selectedTipo));
+  document.getElementById('fornecedorBlock').style.display = (selectedTipo === 'followup') ? '' : 'none';
+  document.getElementById('f-fornecedor').value = e.fornecedor || '';
+  document.getElementById('f-telefone').value = e.telefone || '';
+  document.getElementById('f-repetir').checked = !!e.repetir;
+  document.getElementById('repeatDaysRow').style.display = e.repetir ? 'flex' : 'none';
+  document.getElementById('f-repetir-dias').value = e.repetirDias || 3;
+
+  selectedPrio = e.prioridade || 'normal';
+  document.querySelectorAll('#prioGrid button').forEach(b => b.classList.toggle('sel', b.dataset.prio === selectedPrio));
+
+  // Quando: figure out which path (chip / custom date / calculated) matches this entry
+  document.getElementById('customDateBlock').style.display = 'none';
+  document.getElementById('modoCalculada').style.display = 'none';
+  document.getElementById('toggleCustomDate').classList.remove('active');
+  document.getElementById('toggleCalcDate').classList.remove('active');
+  document.querySelectorAll('#quickChips button').forEach(b => b.classList.remove('sel'));
+  document.getElementById('f-data-direta').value = e.dataFinal;
+  document.getElementById('f-data-base').value = e.baseDate || todayISO();
+  document.getElementById('f-offset').value = e.offsetDays || 3;
+  selectedDir = e.offsetDir || 'depois';
+  document.querySelectorAll('.offset-dir button').forEach(b => b.classList.toggle('sel', b.dataset.dir === selectedDir));
+
+  currentDataFinal = e.dataFinal;
+
+  if(e.modo === 'calculada'){
+    whenSource = 'calc';
+    document.getElementById('modoCalculada').style.display = '';
+    document.getElementById('toggleCalcDate').classList.add('active');
+  } else {
+    let matchedChip = null;
+    document.querySelectorAll('#quickChips button[data-days]').forEach(b => {
+      if(addDays(todayISO(), parseInt(b.dataset.days, 10)) === e.dataFinal) matchedChip = b;
+    });
+    if(matchedChip){
+      whenSource = 'chip';
+      matchedChip.classList.add('sel');
+    } else {
+      whenSource = 'custom';
+      document.getElementById('customDateBlock').style.display = '';
+      document.getElementById('toggleCustomDate').classList.add('active');
+    }
+  }
+
+  if(e.horaInicio){
+    document.getElementById('horaBlock').style.display = '';
+    document.getElementById('toggleHora').classList.add('active');
+    document.getElementById('f-hora').value = e.horaInicio;
+  } else {
+    document.getElementById('horaBlock').style.display = 'none';
+    document.getElementById('toggleHora').classList.remove('active');
+    document.getElementById('f-hora').value = '';
+  }
+
+  updateWhenPreview();
+  updateFornecedorOptions();
+  modalOverlay.classList.add('open');
+}
+
+document.getElementById('fabAdd').addEventListener('click', openAddModal);
+
+document.getElementById('cancelBtn').addEventListener('click', () => {
+  modalOverlay.classList.remove('open');
+});
+modalOverlay.addEventListener('click', (ev) => {
+  if(ev.target === modalOverlay) modalOverlay.classList.remove('open');
+});
+
+document.getElementById('tipoGrid').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button[data-tipo]');
+  if(!btn) return;
+  selectedTipo = btn.dataset.tipo;
+  document.querySelectorAll('#tipoGrid button').forEach(b => b.classList.toggle('sel', b === btn));
+  document.getElementById('fornecedorBlock').style.display = (selectedTipo === 'followup') ? '' : 'none';
+});
+
+document.getElementById('prioGrid').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button[data-prio]');
+  if(!btn) return;
+  selectedPrio = btn.dataset.prio;
+  document.querySelectorAll('#prioGrid button').forEach(b => b.classList.toggle('sel', b === btn));
+});
+
+/* Quando: quick chips */
+document.getElementById('quickChips').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button[data-days]');
+  if(!btn) return;
+  whenSource = 'chip';
+  currentDataFinal = addDays(todayISO(), parseInt(btn.dataset.days, 10));
+  document.querySelectorAll('#quickChips button').forEach(b => b.classList.toggle('sel', b === btn));
+  document.getElementById('customDateBlock').style.display = 'none';
+  document.getElementById('modoCalculada').style.display = 'none';
+  document.getElementById('toggleCustomDate').classList.remove('active');
+  document.getElementById('toggleCalcDate').classList.remove('active');
+  updateWhenPreview();
+});
+
+document.getElementById('toggleCustomDate').addEventListener('click', () => {
+  const block = document.getElementById('customDateBlock');
+  const opening = block.style.display === 'none';
+  block.style.display = opening ? '' : 'none';
+  document.getElementById('toggleCustomDate').classList.toggle('active', opening);
+  document.getElementById('modoCalculada').style.display = 'none';
+  document.getElementById('toggleCalcDate').classList.remove('active');
+  document.querySelectorAll('#quickChips button').forEach(b => b.classList.remove('sel'));
+  if(opening){
+    whenSource = 'custom';
+    currentDataFinal = document.getElementById('f-data-direta').value || todayISO();
+    updateWhenPreview();
+  }
+});
+document.getElementById('f-data-direta').addEventListener('input', (ev) => {
+  if(!ev.target.value) return;
+  whenSource = 'custom';
+  currentDataFinal = ev.target.value;
+  updateWhenPreview();
+});
+
+document.getElementById('toggleCalcDate').addEventListener('click', () => {
+  const block = document.getElementById('modoCalculada');
+  const opening = block.style.display === 'none';
+  block.style.display = opening ? '' : 'none';
+  document.getElementById('toggleCalcDate').classList.toggle('active', opening);
+  document.getElementById('customDateBlock').style.display = 'none';
+  document.getElementById('toggleCustomDate').classList.remove('active');
+  document.querySelectorAll('#quickChips button').forEach(b => b.classList.remove('sel'));
+  if(opening){
+    if(!document.getElementById('f-data-base').value){
+      document.getElementById('f-data-base').value = todayISO();
+    }
+    whenSource = 'calc';
+    updateCalcFromInputs();
+  }
+});
+document.querySelectorAll('.offset-dir button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedDir = btn.dataset.dir;
+    document.querySelectorAll('.offset-dir button').forEach(b => b.classList.toggle('sel', b === btn));
+    updateCalcFromInputs();
+  });
+});
+document.getElementById('f-data-base').addEventListener('input', updateCalcFromInputs);
+document.getElementById('f-offset').addEventListener('input', updateCalcFromInputs);
+
+function updateCalcFromInputs(){
+  const base = document.getElementById('f-data-base').value;
+  const offset = parseInt(document.getElementById('f-offset').value || '0', 10);
+  if(!base) return;
+  const days = selectedDir === 'antes' ? -offset : offset;
+  whenSource = 'calc';
+  currentDataFinal = addDays(base, days);
+  updateWhenPreview();
+}
+
+document.getElementById('toggleHora').addEventListener('click', () => {
+  const block = document.getElementById('horaBlock');
+  const opening = block.style.display === 'none';
+  block.style.display = opening ? '' : 'none';
+  document.getElementById('toggleHora').classList.toggle('active', opening);
+  updateWhenPreview();
+});
+document.getElementById('f-hora').addEventListener('input', updateWhenPreview);
+
+document.getElementById('f-repetir').addEventListener('change', (ev) => {
+  document.getElementById('repeatDaysRow').style.display = ev.target.checked ? 'flex' : 'none';
+});
+
+document.getElementById('f-fornecedor').addEventListener('input', (ev) => {
+  const match = fornecedores.find(f => f.nome.toLowerCase() === ev.target.value.toLowerCase());
+  if(match && match.telefone){
+    document.getElementById('f-telefone').value = match.telefone;
+  }
+});
+
+entryForm.addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if(!titulo) return;
+  if(!currentDataFinal) return;
+
+  let modo = 'direta', baseDate = null, offsetDays = null, offsetDir = null;
+  if(whenSource === 'calc'){
+    modo = 'calculada';
+    baseDate = document.getElementById('f-data-base').value;
+    offsetDays = parseInt(document.getElementById('f-offset').value || '0', 10);
+    offsetDir = selectedDir;
+  }
+
+  const obra = document.getElementById('f-obra').value.trim();
+  const fornecedor = selectedTipo === 'followup' ? document.getElementById('f-fornecedor').value.trim() : '';
+  const telefone = selectedTipo === 'followup' ? document.getElementById('f-telefone').value.trim() : '';
+  const repetir = selectedTipo === 'followup' && document.getElementById('f-repetir').checked;
+  const repetirDias = repetir ? (parseInt(document.getElementById('f-repetir-dias').value || '3', 10)) : null;
+  const notas = document.getElementById('f-notas').value.trim();
+  const horaInicio = document.getElementById('f-hora').value || null;
+
+  if(editingId){
+    const e = entries.find(x => x.id === editingId);
+    if(e){
+      e.titulo = titulo;
+      e.tipo = selectedTipo;
+      e.obra = obra;
+      e.fornecedor = fornecedor;
+      e.telefone = telefone;
+      e.notas = notas;
+      e.modo = modo;
+      e.dataFinal = currentDataFinal;
+      e.horaInicio = horaInicio;
+      e.baseDate = baseDate;
+      e.offsetDays = offsetDays;
+      e.offsetDir = offsetDir;
+      e.prioridade = selectedPrio;
+      e.repetir = repetir;
+      e.repetirDias = repetirDias;
+    }
+    saveEntries();
+    if(obra) upsertObra(obra);
+    if(fornecedor) upsertFornecedor(fornecedor, telefone);
+    modalOverlay.classList.remove('open');
+    editingId = null;
+    render();
+    showToast('Alterações guardadas');
+    return;
+  }
+
+  const entry = {
+    id: 'e' + Date.now() + Math.random().toString(36).slice(2,7),
+    titulo,
+    tipo: selectedTipo,
+    obra,
+    fornecedor,
+    telefone,
+    notas,
+    modo,
+    dataFinal: currentDataFinal,
+    horaInicio,
+    baseDate,
+    offsetDays,
+    offsetDir,
+    prioridade: selectedPrio,
+    repetir,
+    repetirDias,
+    tentativas: 0,
+    concluida: false,
+    criadoEm: new Date().toISOString()
+  };
+
+  entries.push(entry);
+  saveEntries();
+  if(obra) upsertObra(obra);
+  if(fornecedor) upsertFornecedor(fornecedor, telefone);
+
+  modalOverlay.classList.remove('open');
+  render();
+  showToast('Entrada guardada');
+});
+
+/* ---------------- Notifications (best-effort local scheduling) ---------------- */
+let swReady = false;
+
+function combineDateTime(dateISO, timeStr){
+  const [y,m,d] = dateISO.split('-').map(Number);
+  let hh = 8, mm = 0;
+  if(timeStr){
+    const parts = timeStr.split(':').map(Number);
+    hh = parts[0]; mm = parts[1];
+  }
+  return new Date(y, m-1, d, hh, mm, 0, 0).getTime();
+}
+function nextEightAM(){
+  const now = new Date();
+  const cand = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0, 0);
+  if(cand.getTime() <= now.getTime()) cand.setDate(cand.getDate() + 1);
+  return cand.getTime();
+}
+function computeScheduleItems(){
+  const today = todayISO();
+  const horizon = addDays(today, 14);
+  const items = [];
+  entries.forEach(e => {
+    if(e.concluida) return;
+    let ts;
+    if(e.dataFinal < today){
+      ts = nextEightAM();
+    } else if(e.dataFinal <= horizon){
+      ts = combineDateTime(e.dataFinal, e.horaInicio);
+    } else {
+      return;
+    }
+    if(ts <= Date.now()) return;
+    let body = TIPO_LABELS[e.tipo] || '';
+    if(e.obra) body += ' · ' + e.obra;
+    if(e.dataFinal < today) body += ' · Ainda atrasado';
+    items.push({ id: e.id, title: e.titulo, body, timestamp: ts });
+  });
+  return items;
+}
+function syncNotifications(){
+  if(!swReady) return;
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  navigator.serviceWorker.ready.then(reg => {
+    if(reg.active){
+      reg.active.postMessage({ type: 'schedule', items: computeScheduleItems() });
+    }
+  }).catch(() => {});
+}
+
+function updateNotifUI(){
+  const bar = document.getElementById('notifBar');
+  const text = document.getElementById('notifStatusText');
+  const btn = document.getElementById('notifActionBtn');
+  if(!('Notification' in window) || !('serviceWorker' in navigator)){
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+
+  if(!swReady){
+    text.textContent = '🔔 Precisa de alojamento HTTPS para agendar notificações';
+    btn.style.display = 'none';
+    return;
+  }
+
+  const supportsTriggers = ('showTrigger' in Notification.prototype);
+
+  if(Notification.permission === 'granted'){
+    text.textContent = supportsTriggers
+      ? '🔔 Notificações agendadas ativas'
+      : '🔔 Notificações ativas (só com a app aberta ou recente)';
+    btn.style.display = 'none';
+  } else if(Notification.permission === 'denied'){
+    text.textContent = '🔔 Notificações bloqueadas nas definições do Chrome';
+    btn.style.display = 'none';
+  } else {
+    text.textContent = supportsTriggers
+      ? '🔔 Ativa as notificações para não te esqueceres de nada'
+      : '🔔 O teu Chrome tem suporte limitado — ativa à mesma para alertas com a app aberta';
+    btn.style.display = '';
+    btn.textContent = 'Ativar';
+  }
+}
+
+document.getElementById('notifActionBtn').addEventListener('click', async () => {
+  try{
+    const perm = await Notification.requestPermission();
+    updateNotifUI();
+    if(perm === 'granted'){
+      syncNotifications();
+      showToast('Notificações ativadas');
+    } else if(perm === 'denied'){
+      showToast('Permissão recusada');
+    }
+  }catch(e){
+    showToast('Não foi possível pedir permissão agora');
+  }
+});
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js')
+    .then(() => {
+      swReady = true;
+      updateNotifUI();
+      if(Notification.permission === 'granted') syncNotifications();
+    })
+    .catch(() => { swReady = false; updateNotifUI(); });
+} else {
+  updateNotifUI();
+}
+
+/* ---------------- Init ---------------- */
+render();
+</script>
+</body>
+</html>
